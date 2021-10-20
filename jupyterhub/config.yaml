@@ -1,0 +1,101 @@
+proxy:
+  secretToken: "PROXY_SECRET_TOKEN"
+  service:
+    loadBalancerIP: XXX.XXX.XXX.XXX #Insert the IP address of your load balancer here
+  https:
+    enabled: true
+    hosts:
+      - jupyterhub.example.org.au #domain for your jupyterhub
+    letsencrypt:
+      contactEmail: youremail@example.org.au
+imagePullSecrets:
+  - name: registry.gitlab.com # name of k8s secret to access docker images (if not public)
+hub:
+  config:
+    Authenticator:
+      enable_auth_state: true
+      admin_users:
+        - user1
+        - user2
+    CryptKeeper:
+      keys:
+        - "CRYPTKEEPER_SECRET_TOKEN"
+    GenericOAuthenticator:
+      client_id: jupyterhub #any keycloak client name
+      client_secret: 44406203-2222-3333-4444-765bbf81c214 #keycloak client secret
+      oauth_callback_url: https://jupyterhub.jupyterhub.example.org.au/hub/oauth_callback
+      authorize_url: https://auth.jupyterhub.example.org.au/auth/realms/your_realm_name/protocol/openid-connect/auth # the URL to your keycloak instance
+      token_url: https://auth.jupyterhub.example.org.au/auth/realms/your_realm_name/protocol/openid-connect/token
+      userdata_url: https://auth.jupyterhub.example.org.au/auth/realms/eyour_realm_name/protocol/openid-connect/userinfo
+      login_service: keycloak
+      username_key: sub
+      userdata_params:
+        state: state
+    JupyterHub:
+      authenticator_class: generic-oauth
+      upgrade_db: true
+      services: # Only applicable if you want to create a 'service_account'
+        - name: "service-account-token-name"
+          admin: True
+          api_token: "SERVICE_ACCOUNT_SECRET_TOKEN"
+cull:
+  timeout: 3600
+  every: 600
+singleuser:
+  defaultUrl: /lab
+  lifecycleHooks:
+    postStart:
+      exec:
+        command:
+          - "sh"
+          - "-c"
+          - |
+            mkdir -p /home/jovyan/workspace
+            echo $(date) > /home/jovyan/workspace/last-login.txt
+  storage:
+    capacity: 100Gi ##How much disk space will the user get by default
+    dynamic:
+      storageClass: cinder-qriscloud-retain
+      pvcNameTemplate: claim-{username}
+      volumeNameTemplate: volume-{username}
+      storageAccessModes: [ReadWriteOnce]
+
+  memory: # Memory limit per user
+    limit: 3G
+    guarantee: 1G
+  cpu: # CPU limit per user
+    limit: .5
+    guarantee: .5
+  image:
+    # https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-minimal-notebook
+    name: jupyter/minimal-notebook
+    tag: hub-1.3.0
+    # delete_grace_period: 120
+    # slug not required: (slugify(display_name))
+    # but "Explicit is better than implicit"
+  profileList:
+    - display_name: "Minimal environment"
+      slug: minimal-environment
+      description: "Adds command line tools useful when working in Jupyter applications."
+      default: true
+    - display_name: "Datascience environment"
+      slug: datascience-environment
+      description: "Includes libraries for data analysis from the Julia, Python, and R communities."
+      kubespawner_override:
+        image: jupyter/datascience-notebook:hub-1.3.0
+        # https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-scipy-notebook
+    - display_name: "SciPy environment"
+      slug: scipy-environment
+      description: "Includes popular packages from the scientific Python ecosystem."
+      kubespawner_override:
+        image: jupyter/scipy-notebook:hub-1.3.0
+    - display_name: "R environment"
+      slug: r-environment
+      description: "Includes popular packages from the R ecosystem."
+      kubespawner_override:
+        image: jupyter/r-notebook:hub-1.3.0
+    - display_name: "Custom R environment"
+      slug: my-custom-r-environment
+      description: "This custom image was created for EcoCommons and includes popular packages from the R ecosystem and additional packages for ecological modelling"
+      kubespawner_override:
+        image: registry.gitlab.com/ecocommons-australia/ecocommons-platform/analysis-playground-notebooks/r-notebook:hub-1.3.0
