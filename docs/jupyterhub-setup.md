@@ -1,22 +1,35 @@
-| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | Install Jupyterhub | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
+| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | Install JupyterHub | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
 | ------------------ | ------------------------- | --------------------------------------------- | ------------------ | --------------------------- | ------------------------ | --------------------- |
 
-## Install jupyterhub using Helm
+## Install JupyterHub using Helm
 
-Ok, its finally time to actually install Jupyterhub into our cluster!
-To do this, we are going to use a helm chart which makes this installation really easy. We are using the method at zero-to-juyterhub https://zero-to-jupyterhub.readthedocs.io/ as a guide for this.
+It's finally time to actually install JupyterHub into our cluster!
+To do this, we are going to use a helm chart which makes this installation really easy.
+We are using the method provided by the zero-to-juyterhub project https://zero-to-jupyterhub.readthedocs.io/ as a guide for this.
 
-### Customizing Jupyterhub
+All resources will be created in the `jupyterhub` namespace in our Kubernetes cluster.
 
-In this repository, you can find a sample configuration file for your jupyterhub cluster [jupyterhub/config.yaml](../jupyterhub/config.yaml).
+### Customizing JupyterHub
+
+In this repository, you can find a sample configuration file for your JupyterHub cluster [jupyterhub/config.yaml](../jupyterhub/config.yaml).
 
 **NOTE:** Before using this file, you need to edit the file to replace/update the following values:
+- `proxy.service.loadbalancerIP`
+- `proxy.https.hosts`
+- `proxy.https.letsencrypt.contactEmail`
+
+In this example we are using letsencrypt-staging, see the [security](https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/security.html#https) page for other options.
+You can comment out the `proxy.https.acmeServer` for production letsencrypt.
+
+Helm charts traditionally use a file called `values.yaml`, the JupyterHub docs use `config.yaml` so that is what we have gone with here.
 
 ### Generate secrets
 
-- Jupyter Proxy secret ( PROXY_SECRET_TOKEN )
-- CryptKeeper ( CRYPTKEEPER_SECRET_TOKEN )
-- Service Token ( this is only applicable if you want to create a 'service account' in Jupyterhub that can act on users' behalf )
+It is not required to change these values as they are automatically generated if not provided.
+
+- Jupyter Proxy secret (PROXY_SECRET_TOKEN)
+- CryptKeeper (CRYPTKEEPER_SECRET_TOKEN)
+- Service Token (this is only applicable if you want to create a 'service account' in JupyterHub that can act on users' behalf)
 
 **TIP** - To generate a random token/secret using the command line, use the following command - where 32 is the length of the token in characters
 
@@ -24,39 +37,56 @@ In this repository, you can find a sample configuration file for your jupyterhub
 openssl rand -base64 32
 ```
 
-For more detailed information on jupyterhub customization, please see the following guide: https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/customization.html
+For more detailed information on JupyterHub customization, please see the [customization](https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/customization.html) guide.
 
 #### Authentication
 
-The example in the config file supplied here shows a sample configuration for integrating Jupyterhub with Keycloak. For other authentication methods please refer to this guide: https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html
+The example in the configuration file supplied here shows a sample configuration for integrating JupyterHub with Keycloak.
+For other authentication methods please refer to the [authentication](https://zero-to-jupyterhub.readthedocs.io/en/latest/administrator/authentication.html) guide.
 
 ### Custom Images/User environments
 
-One of the main features of Jupyterhub is the ability to provide users with a preconfigured environment. The sample config file shows how to configure multiple preconfigured images ready for the user to choose.
+One of the advantages of JupyterHub is the ability to provide users with a pre-configured environment.
+The sample config file shows how to configure multiple preconfigured images ready for the user to choose.
 
-It's quite easy to extend the base images available from Jupyterhub ( https://github.com/jupyter/docker-stacks ) and create your own custom images. For an example of custom images based on the Jupyterhub stack, please see this example from the EcoCommons platform: https://gitlab.com/ecocommons-australia/ecocommons-platform/analysis-playground-notebooks
+It's quite easy to extend the base images available from JupyterHub (https://github.com/jupyter/docker-stacks) and create your own custom images.
+For an example of custom images based on the JupyterHub stack, please see this example from the EcoCommons platform: https://gitlab.com/ecocommons-australia/ecocommons-platform/analysis-playground-notebooks
 
 For more info, see this: https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/customizing/user-environment.html
 
+**Note** `/home/jovyan` is the default baked in to the JupyterHub images.
+
 ### Customising User Resources
 
-It's easy to customise how much resources a user should have when starting a Jupyterhub server, in the example configuration file we have set the limits per user to:
+It's easy to customise how many resources a user should have when starting a JupyterHub server, in the example configuration file we have set the limits per user to:
 
-- Max 3GB Memory
-- Max 0.5 CPU
+- Max 2GB Memory
+- Max 1 CPU
 
 You should configure these limits based on your users requirements, but please note that you are constrained by the size of your 'worker nodes' - so the maximum configuration for a user must be within the available resources on a single node.
-As an example, if you have a cluster with worker nodes using the r3.medium flavor, these nodes have 4CPUs and 16GB memory each, which means that you need to set your individual user limits just a bit below those, eg Max 15GB Memory and Max 3.5 CPU - this will ensure that a user's server can actually 'fit' on the node.
+As an example, if you have a cluster with worker nodes using the m3.medium flavor, these nodes have 4CPUs and 8GB memory each, which means that you need to set your individual user limits just a bit below those, eg Max 7GB Memory and Max 3.5 CPU - this will ensure that a user's server can actually 'fit' on the node.
 
 More details: https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/customizing/user-resources.html
 
+### Create external access floating IP and DNS
+
+```
+openstack floating ip create
+openstack recordset create --record <floating ip> --type A <project>.cloud.edu.au. <name>.<project>.cloud.edu.au.
+```
+
+Update `proxy.service.loadBalancerIP` and `proxy.https.hosts` in config.yaml with the values above.
+
 ### Run the install script
 
-OK, with our config file updated, we are ready to attempt the installation of Jupyterhub.
+With our configuration file updated, we are ready to attempt the installation of JupyterHub.
 
 ```
 ./jupyterhub/install.sh
 ```
+
+The install may fail for a few different reasons (e.g. timeout performing the image pull).
+If you do find this happens, simply re-run the install script.
 
 While the installation is running, you should be able to see pods being created by issuing this command in a different terminal:
 
@@ -64,22 +94,53 @@ While the installation is running, you should be able to see pods being created 
 kubectl get pod --namespace jupyterhub
 ```
 
-Once the helm installation has been created, you should be able to access your Jupyterhub installation!
+Once the helm installation has completed, you may not yet be able to your JupyterHub installation.
 
-Find the IP we can use to access the JupyterHub. Run the following command until the EXTERNAL-IP of the proxy-public service is available like in the example output.
+In some circumstances, the autohttps pods attempt to set up the HTTPS certificate request before the JupyterHub service has its external IP address provisioned.
+For more details, you can find the open bug report at: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues/2150
+
+We can determine if this has occured by looking at the autohttps logs using the command:
+```
+kubectl --namespace jupyterhub logs -f deployment/autohttps --all-containers=true
+```
+
+and looking for messages like the following:
+* Unable to obtain ACME certificate
+* Timeout during connect (likely firewall problem)
+
+We can resolve the issue by simply deleting the autohttps pods and letting them re-create once the external IP address is available.
+
+Run the following command until the EXTERNAL-IP of the proxy-public service is available like in the example output.
 
 ```
 kubectl get service --namespace jupyterhub
-
 ```
 
-To use JupyterHub, enter the external IP for the proxy-public service in to a browser.
+Once the EXTERNAL-IP is available, get the name of the autohttps pods using:
 
-Wow, you should now have a working Jupyterhub cluster!
+```
+kubectl get pod --namespace jupyterhub | grep autohttps
+```
 
-## Updating your Jupyterhub installation
+and then issue a delete on it:
 
-If you want to modify your Jupyterhub installation, you can make your changes to the config.yaml file and issue the following command
+```
+kubectl --namespace jupyterhub delete pod autohttps-xxxxxxxxxx-xxxxx
+```
+
+It should re-create itself and you can use the logs command again to follow its progress, and this time you should see messages like:
+
+```
+Created secret proxy-public-tls-acme since it does not exist
+Updated secret proxy-public-tls-acme with new value for key acme.json
+```
+
+You should now be able to connect to your JupyterHub service by entering the DNS name you provisioned or the external IP address directly into your browser.
+
+
+## Updating your JupyterHub installation
+
+If you want to modify your JupyterHub installation, you can make your changes to the config.yaml file and issue the following command
 
 ```
 ./jupyterhub/update.sh

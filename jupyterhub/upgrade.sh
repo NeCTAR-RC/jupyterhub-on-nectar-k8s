@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-helm upgrade jupyterhub jupyterhub/jupyterhub --namespace jupyterhub --version=0.11.1 --values config.yaml
+helm upgrade jupyterhub jupyterhub/jupyterhub \
+  --namespace jupyterhub \
+  --version=1.2.0 \
+  --values config.yaml

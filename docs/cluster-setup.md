@@ -1,9 +1,9 @@
-| [Start](README.md) | [Prerequisites](setup.md) | Create Kubernetes Cluster | [Install Jupyterhub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
+| [Start](README.md) | [Prerequisites](setup.md) | Create Kubernetes Cluster | [Install JupyterHub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
 | ------------------ | ------------------------- | ------------------------- | ----------------------------------------- | --------------------------- | ------------------------ | --------------------- |
 
-## Set up Kubernetes cluster on Nectar using Magnum
+## Set up Kubernetes cluster on Nectar using the Container Orchestration System
 
-OK, it's time to create your Kubernetes cluster. We can do this via the command-line, but before we issue the command to create the cluster, we need to determine a few things:
+It's time to create your Kubernetes cluster. We can do this via the command-line, but before we issue the command to create the cluster, we need to determine a few things:
 
 ### Which cluster template to use?
 
@@ -33,7 +33,9 @@ This will give you an output like:
 +--------------------------------------+--------------------------------------+------+
 ```
 
-Based on where your Nectar allocation is, identify the uuid of the template you want to use. For example, if you are on QRISCloud - the template ID to use is: a732bc27-0fa0-44f8-a5b0-53134074947f
+Based on where your Nectar allocation is, identify the uuid of the template you want to use. For example, if you are on melbourne-qh2 - the template ID to use is: `08498a89-71f8-4cfa-b0f1-d039b2ed7b36`
+
+These instructions have been validated with k8s `v1.21.1`
 
 ### Select which keypair to use
 
@@ -55,7 +57,7 @@ openstack flavor list
 ```
 
 You can select different server flavors for master and worker nodes. From the list of available flavors, select the flavors you want to use for master and worker nodes.
-In our example below, we are using a r3.medium flavor, which has 16GB Memory and 4 CPUS.
+In our example below, we are using a m3.medium flavor, which has 8GB Memory and 4 CPUS.
 
 ### Cluster size
 
@@ -68,16 +70,15 @@ If you have a large cluster, or a cluster with lots of traffic, it's beneficial 
 Now we are ready to issue the command to actually create the cluster. Depending on number of nodes etc, the creation of a new cluster varies, but expect at least 10-20 minutes before a cluster is fully created.
 
 ```
-openstack coe cluster create
---cluster-template a732bc27-0fa0-44f8-a5b0-53134074947f
---labels
-admission_control_list="NodeRestriction,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,TaintNodesByCondition,Priority,DefaultTolerationSeconds,DefaultStorageClass,StorageObjectInUseProtection,PersistentVolumeClaimResize,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,RuntimeClass"
---merge-labels
---master-count 3
---node-count 10
---flavor r3.medium
---master-flavor r3.medium
---keypair your-keypair-name
+openstack coe cluster create \
+--cluster-template 08498a89-71f8-4cfa-b0f1-d039b2ed7b36 \
+--labels admission_control_list="NodeRestriction,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,TaintNodesByCondition,Priority,DefaultTolerationSeconds,DefaultStorageClass,StorageObjectInUseProtection,PersistentVolumeClaimResize,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,RuntimeClass" \
+--merge-labels \
+--master-count 3 \
+--node-count 10 \
+--flavor m3.medium \
+--master-flavor m3.medium \
+--keypair your-keypair-name \
 mycluster
 ```
 
@@ -89,7 +90,14 @@ To check the status of your cluster(s), issue the following command:
 openstack coe cluster list
 ```
 
-Your new cluster should show up in this list, and when ready it will have a status of 'CREATE_COMPLETE'.
+Your new cluster should show up in this list, and when ready it will have a status of `CREATE_COMPLETE`.
+
+To follow the build of your cluster you can do the following
+
+```
+openstack coe cluster show -f value -c stack_id <coe cluster id>
+openstack stack event list --nested-depth 4 --follow <stack id from above>
+```
 
 ### Connect with cluster from local machine
 
@@ -102,19 +110,16 @@ mkdir mycluster
 cd mycluster
 ```
 
-Use the openstack tool to generate the config file for kubectl:
+Use the OpenStack CLI tool to generate the config file for kubectl:
 
 ```
 openstack coe cluster config mycluster
-export KUBECONFIG=/home/jake/temp/coe/mycluster/config
 ```
 
-Set the KUBECONFIG environment variable used by copy-and-pasting the export KUBECONFIG=... line output by the above to the shell prompt:
+Set the `KUBECONFIG` environment variable used by copy-and-pasting the output of the above to the shell prompt, e.g:
 
 ```
-export KUBECONFIG=/home/jake/temp/coe/mycluster/config
-echo $KUBECONFIG
-/home/jake/temp/coe/mycluster/config
+export KUBECONFIG=/home/user/temp/coe/mycluster/config
 ```
 
 You should now be able to execute a kubectl call to query your cluster:
@@ -127,24 +132,27 @@ The example above, was taken from: https://tutorials.rc.nectar.org.au/kubernetes
 
 ### Reboot flannel pods
 
-After creating or resizing the cluster, it's reccommended to restart all the flannel/networking pods in the cluster to avoid any networking issues.
+After creating or resizing the cluster, it's recommended to restart all the flannel/networking pods in the cluster to avoid any networking issues.
 Flannel pods can be restarted by issuing the following command:
 
 ```
 kubectl -n kube-system get po -l app=flannel -l tier=node  -o name | xargs kubectl -n kube-system delete
 ```
 
+This works around [this bug](https://github.com/flannel-io/flannel/issues/1155) that you may encounter.
+
 ### Create storage classes
 
-You might need to create an additional storage class for your Jupyterhub installation. Clusters created by Nectar's Magnum service supports the cinder storage type, and in the example below we are setting up this storage type for Jupyterhub to use.
-Storage classes needs to be set up towards your availability zone in Nectar ( ref https://tutorials.rc.nectar.org.au/kubernetes/09-volume ).
+You will need to create an additional storage class for your JupyterHub installation. Clusters created by Nectar's Container Orchestration service support the cinder storage type, and in the example below we are setting up this storage type for JupyterHub to use.
+Storage classes are availability zone specific, so you will need to provide the availability zone you are launching your cluster in (ref https://tutorials.rc.nectar.org.au/kubernetes/09-volume).
 
-There is an example file to set up storage classes using QRISCloud availability zone here: [k8s/storage-classes.yaml](../k8s/storage-classes.yaml)
-If you want to use this file, please replace the references to QRISCloud in the with your availability zone.
+There is an example configuration file to set up storage classes using the melbourne-qh2 availability zone here: [k8s/storage-classes.yaml](../k8s/storage-classes.yaml).
+Please replace the references to melbourne-qh2 with your chosen availability zone.
+
 To see a list the available availablility zones, issue the following command:
 
 ```
-openstack  availability zone list
+openstack availability zone list
 ```
 
 Once the storage-classes.yaml file has been updated with the correct availability zone, its time to add this to the cluster.
@@ -153,6 +161,6 @@ Once the storage-classes.yaml file has been updated with the correct availabilit
 kubectl apply -f k8s/storage-classes.yaml
 ```
 
-Once all the above steps have been completed - congrats you now have a running Kubernetes cluster!
+Once all the above steps have been completed - congratulationss you now have a running Kubernetes cluster!
 
-It's [time to Install Jupyterhub](jupyterhub-setup.md)
+It's [time to Install JupyterHub](jupyterhub-setup.md)

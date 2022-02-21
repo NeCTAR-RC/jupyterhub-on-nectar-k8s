@@ -1,9 +1,9 @@
-| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install Jupyterhub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | Useful Links | [Credits](credits.md) |
+| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install JupyterHub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | Useful Links | [Credits](credits.md) |
 | ------------------ | ------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------- | ------------ | --------------------- |
 
 ## Useful links
 
-### Zero to Jupyterhub
+### Zero to JupyterHub
 
 https://zero-to-jupyterhub.readthedocs.io/en/latest/index.html
 
@@ -15,16 +15,16 @@ https://tutorials.rc.nectar.org.au/
 
 https://github.com/prometheus-operator/kube-prometheus
 
-### Jupyterhub Base Image stacks
+### JupyterHub Base Image stacks
 
 https://github.com/jupyter/docker-stacks
 
-### Example: EcoCommons custom Jupyterhub images
+### Example: EcoCommons custom JupyterHub images
 
 https://gitlab.com/ecocommons-australia/ecocommons-platform/analysis-playground-notebooks
 
 ### Kubectl
 
-Kubectl is the command line tool we use to manage our Kubernetes clusters.
+Kubectl is the command line tool used to manage Kubernetes clusters.
 
 [Kubectl Cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)

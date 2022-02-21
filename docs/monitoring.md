@@ -1,11 +1,11 @@
-| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install Jupyterhub](jupyterhub-setup.md) | Monitoring | [Useful Links](links.md) | [Credits](credits.md) |
+| [Start](README.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install JupyterHub](jupyterhub-setup.md) | Monitoring | [Useful Links](links.md) | [Credits](credits.md) |
 | ------------------ | ------------------------- | --------------------------------------------- | ----------------------------------------- | ---------- | ------------------------ | --------------------- |
 
 ## Monitoring stack
 
 ### Overview
 
-There are many ways to monitor your Kubernetes cluster, and since your Jupyterhub is now running on Kubernetes - it makes sense to install monitoring tools for Kubernetes that also allows you to monitor your Jupyterhub installation.
+There are many ways to monitor your Kubernetes cluster, and since your JupyterHub is now running on Kubernetes - it makes sense to install monitoring tools for Kubernetes that also allows you to monitor your JupyterHub installation.
 
 One of the most used and recognised tools for monitoring Kubernetes is Prometheus and Grafana - and for a simple way to install the required components in your Kubernetes cluster we can use the kube-prometheus package: https://github.com/prometheus-operator/kube-prometheus
 
@@ -70,7 +70,7 @@ Then access via http://localhost:9093
 
 Note: There are instructions on how to route to these pods behind an ingress controller in the Exposing Prometheus/Alermanager/Grafana via Ingress section here: https://github.com/prometheus-operator/kube-prometheus#exposing-prometheusalermanagergrafana-via-ingress
 
-#### Remove/Unistall the monitoring stack
+#### Remove/Uninstall the monitoring stack
 
 ```
 kubectl delete --ignore-not-found=true -f manifests/ -f manifests/setup

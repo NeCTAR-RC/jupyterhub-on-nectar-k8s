@@ -1,5 +1,5 @@
 proxy:
-  secretToken: "PROXY_SECRET_TOKEN"
+  #secretToken: "PROXY_SECRET_TOKEN"
   service:
     loadBalancerIP: XXX.XXX.XXX.XXX #Insert the IP address of your load balancer here
   https:
@@ -8,36 +8,50 @@ proxy:
       - jupyterhub.example.org.au #domain for your jupyterhub
     letsencrypt:
       contactEmail: youremail@example.org.au
-imagePullSecrets:
-  - name: registry.gitlab.com # name of k8s secret to access docker images (if not public)
+      # use letsencrypt-staging - remove below line for letsencrypt-prod
+      acmeServer: https://acme-staging-v02.api.letsencrypt.org/directory
+imagePullSecrets: []
+#hub:
+#  config:
+#    Authenticator:
+#      admin_users:
+#        - user1
+#        - user2
+#      allowed_users:
+#         - user3 
+#         - user4
+#    DummyAuthenticator:
+#      password: a-shared-secret-password
+#    JupyterHub:
+#      authenticator_class: dummy
 hub:
   config:
     Authenticator:
       enable_auth_state: true
       admin_users:
-        - user1
-        - user2
-    CryptKeeper:
-      keys:
-        - "CRYPTKEEPER_SECRET_TOKEN"
+        - <your auth email> # repeat to add any other admin users required
+    #CryptKeeper:
+    #  keys:
+    #    - "CRYPTKEEPER_SECRET_TOKEN"
     GenericOAuthenticator:
       client_id: jupyterhub #any keycloak client name
       client_secret: 44406203-2222-3333-4444-765bbf81c214 #keycloak client secret
       oauth_callback_url: https://jupyterhub.jupyterhub.example.org.au/hub/oauth_callback
       authorize_url: https://auth.jupyterhub.example.org.au/auth/realms/your_realm_name/protocol/openid-connect/auth # the URL to your keycloak instance
       token_url: https://auth.jupyterhub.example.org.au/auth/realms/your_realm_name/protocol/openid-connect/token
-      userdata_url: https://auth.jupyterhub.example.org.au/auth/realms/eyour_realm_name/protocol/openid-connect/userinfo
+      userdata_url: https://auth.jupyterhub.example.org.au/auth/realms/your_realm_name/protocol/openid-connect/userinfo
+      username_key: preferred_username # this may differ for some sites e.g: sub
       login_service: keycloak
-      username_key: sub
       userdata_params:
         state: state
     JupyterHub:
+      # admin_access: false # use to disable admin access to user notebooks
       authenticator_class: generic-oauth
       upgrade_db: true
-      services: # Only applicable if you want to create a 'service_account'
-        - name: "service-account-token-name"
-          admin: True
-          api_token: "SERVICE_ACCOUNT_SECRET_TOKEN"
+      #services: # Only applicable if you want to create a 'service_account'
+      #  - name: "service-account-token-name"
+      #    admin: True
+      #    api_token: "SERVICE_ACCOUNT_SECRET_TOKEN"
 cull:
   timeout: 3600
   every: 600
@@ -53,18 +67,18 @@ singleuser:
             mkdir -p /home/jovyan/workspace
             echo $(date) > /home/jovyan/workspace/last-login.txt
   storage:
-    capacity: 100Gi ##How much disk space will the user get by default
+    capacity: 10Gi ##How much disk space will the user get by default
     dynamic:
-      storageClass: cinder-qriscloud-retain
+      storageClass: cinder-jupyterhub-retain
       pvcNameTemplate: claim-{username}
       volumeNameTemplate: volume-{username}
       storageAccessModes: [ReadWriteOnce]
 
   memory: # Memory limit per user
-    limit: 3G
+    limit: 2G
     guarantee: 1G
   cpu: # CPU limit per user
-    limit: .5
+    limit: 1
     guarantee: .5
   image:
     # https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-minimal-notebook

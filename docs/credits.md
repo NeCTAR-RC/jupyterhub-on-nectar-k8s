@@ -1,4 +1,4 @@
-| [Start](Readme.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install Jupyterhub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | Credits |
+| [Start](Readme.md) | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install JupyterHub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | Credits |
 | ------------------ | ------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------- | ------------------------ | ------- |
 
 ## Credits

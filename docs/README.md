@@ -1,10 +1,10 @@
-| Start | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install Jupyterhub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
+| Start | [Prerequisites](setup.md) | [Create Kubernetes Cluster](cluster-setup.md) | [Install JupyterHub](jupyterhub-setup.md) | [Monitoring](monitoring.md) | [Useful Links](links.md) | [Credits](credits.md) |
 | ----- | ------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------- | ------------------------ | --------------------- |
 
-## Jupyterhub on Kubernetes
+## JupyterHub on Kubernetes
 
-Documentation and scripts for users of Nectar Research Cloud to create a Kubernetes cluster with Jupyterhub on their allocation.
+This repository contains the documentation and scripts needed for users of
+ARDC's Nectar Research Cloud to create a Kubernetes cluster and install
+JupyterHub onto it with their project allocation.
 
-This guide will show you how to create a functional Jupyterhub installation in your Nectar allocation using Kubernetes.
-
-To start, to to the [Prerequisites](setup.md) page now
+To get started, see the [Prerequisites](setup.md) page.
