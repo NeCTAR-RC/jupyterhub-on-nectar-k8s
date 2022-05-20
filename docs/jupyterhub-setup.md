@@ -70,8 +70,16 @@ More details: https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/cus
 
 ### Create external access floating IP and DNS
 
+You will first need to know on which network to create the floating ip. To discover this you can run
+
 ```
-openstack floating ip create
+openstack router list | egrep 'ID|<cluster name>'
+openstack router show <router_id_from_above>
+```
+the network you should use will be the external_gateway_info->network_id from the last command. Using this info we can create our floating ip and dns record
+
+```
+openstack floating ip create <network_id>
 openstack recordset create --record <floating ip> --type A <project>.cloud.edu.au. <name>.<project>.cloud.edu.au.
 ```
 

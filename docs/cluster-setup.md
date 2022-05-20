@@ -161,6 +161,14 @@ Once the storage-classes.yaml file has been updated with the correct availabilit
 kubectl apply -f k8s/storage-classes.yaml
 ```
 
-Once all the above steps have been completed - congratulationss you now have a running Kubernetes cluster!
+At this point it is strongly recommended that you ensure your cluster is all running and healthy.
+Once all pods, services, daemonsets, deployments, replicasets and statefulsets are all shown as ready and healthy we are good to continue.
+Check these with
+
+```
+kubectl get all --all-namespaces
+```
+
+Once all the above steps have been completed - congratulations you now have a running Kubernetes cluster!
 
 It's [time to Install JupyterHub](jupyterhub-setup.md)
