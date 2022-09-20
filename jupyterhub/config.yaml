@@ -1,4 +1,5 @@
 proxy:
+  # Generate a token with `openssl rand -hex 32`
   #secretToken: "PROXY_SECRET_TOKEN"
   service:
     loadBalancerIP: XXX.XXX.XXX.XXX #Insert the IP address of your load balancer here
@@ -31,9 +32,6 @@ hub:
       enable_auth_state: true
       admin_users:
         - <your auth email> # repeat to add any other admin users required
-    #CryptKeeper:
-    #  keys:
-    #    - "CRYPTKEEPER_SECRET_TOKEN" # generate with 'openssl rand -hex 32'
     GenericOAuthenticator:
       client_id: jupyterhub #any keycloak client name
       client_secret: 44406203-2222-3333-4444-765bbf81c214 #keycloak client secret

@@ -34,7 +34,7 @@ It is not required to change these values as they are automatically generated if
 **TIP** - To generate a random token/secret using the command line, use the following command - where 32 is the length of the token in characters
 
 ```
-openssl rand -base64 32
+openssl rand -hex 32
 ```
 
 For more detailed information on JupyterHub customization, please see the [customization](https://zero-to-jupyterhub.readthedocs.io/en/latest/jupyterhub/customization.html) guide.
