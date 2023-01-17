@@ -103,7 +103,7 @@ While the installation is running, you should be able to see pods being created 
 kubectl get pod --namespace jupyterhub
 ```
 
-Once the helm installation has completed, you may not yet be able to your JupyterHub installation.
+Once the helm installation has completed, you may not yet be able to access your JupyterHub installation.
 
 In some circumstances, the autohttps pods attempt to set up the HTTPS certificate request before the JupyterHub service has its external IP address provisioned.
 For more details, you can find the open bug report at: https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues/2150
@@ -144,7 +144,7 @@ Created secret proxy-public-tls-acme since it does not exist
 Updated secret proxy-public-tls-acme with new value for key acme.json
 ```
 
-You should now be able to connect to your JupyterHub service by entering the DNS name you provisioned or the external IP address directly into your browser.
+You should now be able to connect to your JupyterHub service by entering the DNS name you provisioned.
 
 
 ## Updating your JupyterHub installation
