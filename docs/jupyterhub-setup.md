@@ -77,10 +77,11 @@ openstack router list | egrep 'ID|<cluster name>'
 openstack router show <router_id_from_above>
 ```
 the network you should use will be the external_gateway_info->network_id from the last command. Using this info we can create our floating ip and dns record
+(you will need to have python-designateclient client installed for `openstack recordset create ...`)
 
 ```
 openstack floating ip create <network_id>
-openstack recordset create --record <floating ip> --type A <project>.cloud.edu.au. <name>.<project>.cloud.edu.au.
+openstack recordset create --record <floating ip> --type A <project>.cloud.edu.au. <name>
 ```
 
 Update `proxy.service.loadBalancerIP` and `proxy.https.hosts` in config.yaml with the values above.
