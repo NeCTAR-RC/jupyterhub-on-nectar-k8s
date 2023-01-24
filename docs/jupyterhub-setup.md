@@ -84,7 +84,9 @@ openstack floating ip create <network_id>
 openstack recordset create --record <floating ip> --type A <project>.cloud.edu.au. <name>
 ```
 
-Update `proxy.service.loadBalancerIP` and `proxy.https.hosts` in config.yaml with the values above.
+Update config.yml with the following values
+- `proxy.service.loadBalancerIP` - `<Floating IP>`
+- `proxy.https.hosts` - `<name>.<project>.cloud.edu.au`
 
 ### Run the install script
 
