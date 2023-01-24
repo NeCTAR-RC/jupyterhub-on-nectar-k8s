@@ -8,8 +8,9 @@ proxy:
       - jupyterhub.example.org.au #domain for your jupyterhub
     letsencrypt:
       contactEmail: youremail@example.org.au
-      # use letsencrypt-staging - remove below line for letsencrypt-prod
+      # use letsencrypt-staging - remove below line and uncomment next for letsencrypt-prod
       acmeServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      # acmeServer: https://acme-v02.api.letsencrypt.org/directory
 imagePullSecrets: []
 #hub:
 #  config:
